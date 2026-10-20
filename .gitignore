@@ -1,0 +1,9 @@
+# Competition data is licensed for non-commercial competition use; it is never committed.
+data/
+submissions/
+results_tune.json
+.venv/
+__pycache__/
+*.pyc
+.env
+kaggle.json
