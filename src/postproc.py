@@ -140,8 +140,10 @@ def predict(a):
     import torch
     from pycocotools import mask as cmask
     from PIL import Image
-    device = unet.setup_cuda()
-    paths = sorted((DATA / "test/test_images").iterdir())
+    device = unet.setup_cuda(cpu=a.cpu)
+    if a.cpu:
+        torch.set_num_threads(30)
+    paths = sorted((DATA / "test/test_images").iterdir())[:a.limit or None]
     imgs = np.stack([unet.load_image(p) for p in paths])          # at the output scale S
     probs = []
     for tag in a.tags:                                             # models may have been trained at another scale
@@ -175,6 +177,7 @@ if __name__ == "__main__":
     ap.add_argument("--tags", default="v1"); ap.add_argument("--tta", action="store_true")
     ap.add_argument("--thr", type=float, default=0.7); ap.add_argument("--min-area", type=int, default=80)
     ap.add_argument("--limb", type=int, default=0); ap.add_argument("--merge-r", type=int, default=0); ap.add_argument("--min-mean", type=float, default=0.0)
+    ap.add_argument("--cpu", action="store_true", help="predict on CPU (GPU busy)"); ap.add_argument("--limit", type=int, default=0, help="first N test images (timing test)")
     a = ap.parse_args(); a.tags = a.tags.split(",")
     if a.mode == "probs":
         cache_probs(a.tags)

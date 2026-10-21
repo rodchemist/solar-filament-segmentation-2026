@@ -230,7 +230,9 @@ def predict_probs(model, imgs_uint8, device, bs=4, tta=False):
     import torch
     out = np.zeros(imgs_uint8.shape, np.float16)
     model.eval()
-    with torch.no_grad(), torch.autocast(device.type, dtype=torch.bfloat16):
+    import contextlib
+    ac = torch.autocast(device.type, dtype=torch.bfloat16) if device.type == "cuda" else contextlib.nullcontext()
+    with torch.no_grad(), ac:
         for i in range(0, len(imgs_uint8), bs):
             x = normalize(torch.from_numpy(imgs_uint8[i:i + bs]).to(device)[:, None]).contiguous(memory_format=torch.channels_last)
             p = torch.sigmoid(model(x).float())
